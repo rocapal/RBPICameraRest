@@ -27,6 +27,6 @@ def get_parameters (request):
 	#for k in commands.keys():
 	#	d[k] = commands[k]
 	
-	return HttpResponse(jsonpickle.encode(commands), JSON_MIMETYPE)
+	return HttpResponse(jsonpickle.encode(commands.values()), JSON_MIMETYPE)
 	 
 

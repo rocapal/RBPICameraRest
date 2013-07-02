@@ -20,26 +20,27 @@
 
 import subprocess
 import StringIO
-
+from json import JSONEncoder
+from django.utils import simplejson
 
 class Command:
-	def __init__(self, name, large_name, description):
+	def __init__(self, name, command, large_command, description):
 		self.name = name
-		self.large_name = large_name
+		self.command = command
+		self.large_command = large_command
 		self.description = description
-		self.list_options = None
 
 	def set_options (self, options):
-		self.list_options = options
+		self.options = options
 
 	def __str__(self):
 		str = self.name + "\n"
-		str += self.large_name + "\n"
+		str = self.command + "\n"	
+		str += self.large_command + "\n"
 		str += self.description + "\n"
 
-		if (self.list_options != None):
-			str += "Options: " + ','.join(self.list_options)			
-
+		if (self.options != None):
+			str += "Options: " + ','.join(self.options)			
 
 		return str
 
@@ -56,22 +57,22 @@ def parse_command (line):
 
 	global lcommands
 
-	name = line.split(',')[0]
+	command = line.split(',')[0]
 
-	if (name in black_list):
+	if (command in black_list):
 		return
 
-	large_name = line.split(',')[1].split(':')[0].lstrip()[0:-1]
+	large_command = line.split(',')[1].split(':')[0].lstrip()[0:-1]
 	desc = line.split(':')
 	description = (desc[1:][0])[1:-1]
 	
-	c = Command (name, large_name, description)
+	c = Command (large_command[2:], command, large_command, description)
 	
-	if (name in boolean_commands):
+	if (command in boolean_commands):
 		options = ['True', 'False']	
 		c.set_options(options)
 
-	key = large_name[2:]
+	key = large_command[2:]
 	lcommands[key] = c
 
 
@@ -85,6 +86,7 @@ def parse_options (line):
 
 def parse ():
 
+	global options_index
 
 	p = subprocess.Popen('raspistill', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdout, stderror = p.communicate()
@@ -92,6 +94,7 @@ def parse ():
 	lines = StringIO.StringIO(stderror)
 
 	notes = False
+	options_index = 0
 
 	for line in lines:
 		if line[0] == "-":
