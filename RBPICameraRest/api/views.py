@@ -7,6 +7,8 @@ import os
 import datetime
 from parser import parse
 import jsonpickle
+from operator import itemgetter
+
 
 JSON_MIMETYPE="application/json"
 
@@ -26,7 +28,10 @@ def get_parameters (request):
 	#d = collections.defaultdict()
 	#for k in commands.keys():
 	#	d[k] = commands[k]
-	
-	return HttpResponse(jsonpickle.encode(commands.values()), JSON_MIMETYPE)
+
+	l = commands.values()
+	l.sort(key=lambda x: x.cid)
+
+	return HttpResponse(jsonpickle.encode(l), JSON_MIMETYPE)
 	 
 

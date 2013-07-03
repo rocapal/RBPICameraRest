@@ -24,36 +24,42 @@ from json import JSONEncoder
 from django.utils import simplejson
 
 class Command:
-	def __init__(self, name, command, large_command, description):
+	def __init__(self, name, command, large_command, description, c_id):
 		self.name = name
 		self.command = command
 		self.large_command = large_command
 		self.description = description
+		self.cid = c_id		
 
 	def set_options (self, options):
 		self.options = options
 
 	def __str__(self):
-		str = self.name + "\n"
-		str = self.command + "\n"	
-		str += self.large_command + "\n"
-		str += self.description + "\n"
+		strout = str(self.cid) + "\n"
+		strout += self.name + "\n"
+		strout += self.command + "\n"	
+		strout += self.large_command + "\n"
+		strout += self.description + "\n"
 
-		if (self.options != None):
-			str += "Options: " + ','.join(self.options)			
+		try:
+			if (self.options != None):
+				strout += "Options: " + ','.join(self.options)
+		except:
+			None
 
-		return str
+		return strout
 
 
 lcommands = {}
+
 options_index = 0
 options_name = ['exposure', 'awb', 'imxfx', 'metering']
 
-black_list = ["-?", "-v", "-d", "-n", "-p", "-o", "-f"]
+black_list = ["-?", "-v", "-d", "-n", "-p", "-o", "-f", "-op"]
 
 boolean_commands = ["-vs","-vf", "-hf"]
 
-def parse_command (line):
+def parse_command (line, cid):
 
 	global lcommands
 
@@ -66,7 +72,7 @@ def parse_command (line):
 	desc = line.split(':')
 	description = (desc[1:][0])[1:-1]
 	
-	c = Command (large_command[2:], command, large_command, description)
+	c = Command (large_command[2:], command, large_command, description, cid)
 	
 	if (command in boolean_commands):
 		options = ['True', 'False']	
@@ -95,10 +101,12 @@ def parse ():
 
 	notes = False
 	options_index = 0
-
+	c = 0
 	for line in lines:
 		if line[0] == "-":
-			parse_command(line)
+	
+			parse_command(line, c)
+			c = c + 1
 		
 		if (line == "Notes\n"):
 			notes = True
