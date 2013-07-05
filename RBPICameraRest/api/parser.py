@@ -85,6 +85,8 @@ def parse_command (line, cid):
 def parse_options (line):
 	global lcommands, options_index, options_name
 
+	line = line.rstrip()
+	print line
 	options = line.split(',')
 	lcommands[options_name[options_index]].set_options(options)
 

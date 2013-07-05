@@ -13,5 +13,6 @@ urlpatterns = patterns('',
 
     (r'^version/$', 'RBPICameraRest.api.views.version'),
     (r'^params/$', 'RBPICameraRest.api.views.get_parameters'),
+    (r'^photo/shot/$', 'RBPICameraRest.api.views.photo_shot'),
 )
 
