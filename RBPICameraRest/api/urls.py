@@ -12,7 +12,10 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
 
     (r'^version/$', 'RBPICameraRest.api.views.version'),
-    (r'^params/$', 'RBPICameraRest.api.views.get_parameters'),
+    (r'^photo/params/$', 'RBPICameraRest.api.views.get_photo_params'),
     (r'^photo/shot/$', 'RBPICameraRest.api.views.photo_shot'),
+
+    (r'^video/params/$', 'RBPICameraRest.api.views.get_video_params'),
+    (r'^video/streaming/$', 'RBPICameraRest.api.views.video_streaming'),
 )
 

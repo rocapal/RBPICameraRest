@@ -5,7 +5,7 @@ import datetime
 import collections
 from django.http import HttpResponse, HttpResponseServerError
 from django.utils import simplejson
-from parser import parse
+from parser import *
 import jsonpickle
 from operator import itemgetter
 
@@ -27,9 +27,9 @@ def version(request):
 	return HttpResponse(simplejson.dumps(data), JSON_MIMETYPE)
 
 
-def get_parameters (request):
+def get_photo_params (request):
 	
-	commands = parse()
+	commands = parse(PHOTO_COMMAND)
 
 	l = commands.values()
 	l.sort(key=lambda x: x.cid)
@@ -37,6 +37,30 @@ def get_parameters (request):
 	return HttpResponse(jsonpickle.encode(l), JSON_MIMETYPE)
 
 
+def get_video_params (request):
+
+	commands = parse(VIDEO_COMMAND)
+	l = commands.values()
+	l.sort(key=lambda x: x.cid)
+
+	return HttpResponse(jsonpickle.encode(l), JSON_MIMETYPE)
+
+
+@csrf_exempt
+def video_streaming (request):
+
+	if request.method == 'POST':
+		json_data = simplejson.loads(request.raw_post_data)
+
+		url_streaming = start_streaming(json_data)
+
+		return HttpResponse(simplejson.dumps(url_streaming), JSON_MIMETYPE)
+
+
+	else:
+		data = { 'msg' : 'Just allowed POST petition' }
+		return HttpResponse(simplejson.dumps(data), JSON_MIMETYPE)
+		
 @csrf_exempt  
 def photo_shot (request):
 

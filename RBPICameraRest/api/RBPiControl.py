@@ -22,18 +22,25 @@ from subprocess import call
 import StringIO
 from json import JSONEncoder
 from django.utils import simplejson
+import socket
 
 IMAGE_FILE_PATH = "/tmp/image.jpg"
+
 RBPI_PHOTO_COMMAND = "raspistill"
+RBPI_VIDEO_COMMAND = "raspivid"
+
+VLC_STREAMING_COMMAND = " | cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264"
+VLC_STREAMING_URL = "http://%s:8090/"
 
 disable_args = ['none','false', 'off']
 
-def snap_photo (args_list):
 
-	args = "--output " + IMAGE_FILE_PATH + " "
+def parse_args (args_list, timeout = 0):
+
+	args = ""
 
 	if "timeout" is not args_list:
-		args = args + "--timeout 0 "
+		args = args + "--timeout " + str(timeout) + " "
 
 
 	for arg in args_list:
@@ -42,15 +49,46 @@ def snap_photo (args_list):
 			continue
 		if (arg["argument"] in disable_args):
 			continue
-			
+                        
 		args = args + "--" + arg["name"] + " " + arg["argument"] + " "
 
+	return args
+
+def snap_photo (args_list):
+
+	args = "--output " + IMAGE_FILE_PATH + " "  + parse_args(args_list)
 
 	command = RBPI_PHOTO_COMMAND + " " + args
-	print command
 
 	return_code = call(command, shell=True);
 	if (return_code == 0):
 		return IMAGE_FILE_PATH
 	else:
 		return None
+
+
+def start_streaming (args_list):
+
+	args = " -o - " + parse_args(args_list, 9999999)
+	command = RBPI_VIDEO_COMMAND + " " + args + " " + VLC_STREAMING_COMMAND
+
+	#code = call (command, shell=True)
+	code = 0
+	res = {}
+
+	if (code == 0):
+		res["code"] = 200
+		res["streaming_url"] = VLC_STREAMING_URL % (get_ip())
+	else:
+		res["code"] = 500
+		res["streaming_url"] = ""
+	
+	return res
+
+
+def get_ip ():
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(("gmail.com",80))
+	ip = (s.getsockname()[0])
+	s.close()
+	return ip

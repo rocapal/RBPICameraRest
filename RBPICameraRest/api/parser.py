@@ -23,6 +23,9 @@ import StringIO
 from json import JSONEncoder
 from django.utils import simplejson
 
+PHOTO_COMMAND = "raspistill"
+VIDEO_COMMAND = "raspivid"
+
 class Command:
 	def __init__(self, name, command, large_command, description, c_id):
 		self.name = name
@@ -86,17 +89,16 @@ def parse_options (line):
 	global lcommands, options_index, options_name
 
 	line = line.rstrip()
-	print line
 	options = line.split(',')
 	lcommands[options_name[options_index]].set_options(options)
 
 	options_index = options_index + 1
 
-def parse ():
+def parse (command):
 
 	global options_index
 
-	p = subprocess.Popen('raspistill', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdout, stderror = p.communicate()
 
 	lines = StringIO.StringIO(stderror)
