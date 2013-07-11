@@ -17,5 +17,6 @@ urlpatterns = patterns('',
 
     (r'^video/params/$', 'RBPICameraRest.api.views.get_video_params'),
     (r'^video/streaming/$', 'RBPICameraRest.api.views.video_streaming'),
+    (r'^video/streaming/stop/$', 'RBPICameraRest.api.views.video_streaming_stop'),
 )
 

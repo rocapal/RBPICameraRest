@@ -96,7 +96,9 @@ def parse_options (line):
 
 def parse (command):
 
-	global options_index
+	global options_index, lcommands
+
+	lcommands.clear()
 
 	p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdout, stderror = p.communicate()

@@ -18,11 +18,11 @@ from RBPiControl import *
 JSON_MIMETYPE="application/json"
 
 
-
 def version(request):
 
 	data = {'name': 'RBPICameraRest',
 		'version' : '0.1'}
+
 
 	return HttpResponse(simplejson.dumps(data), JSON_MIMETYPE)
 
@@ -60,6 +60,16 @@ def video_streaming (request):
 	else:
 		data = { 'msg' : 'Just allowed POST petition' }
 		return HttpResponse(simplejson.dumps(data), JSON_MIMETYPE)
+
+
+def video_streaming_stop (request):
+
+	stop_streaming()
+
+	data = {'code': 200,
+		'msg' : 'Streaming stopped correctly!' }
+	return HttpResponse(simplejson.dumps(data), JSON_MIMETYPE)
+
 		
 @csrf_exempt  
 def photo_shot (request):

@@ -23,6 +23,7 @@ import StringIO
 from json import JSONEncoder
 from django.utils import simplejson
 import socket
+import threading
 
 IMAGE_FILE_PATH = "/tmp/image.jpg"
 
@@ -32,7 +33,10 @@ RBPI_VIDEO_COMMAND = "raspivid"
 VLC_STREAMING_COMMAND = " | cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264"
 VLC_STREAMING_URL = "http://%s:8090/"
 
+control_streaming_th = None 
+
 disable_args = ['none','false', 'off']
+
 
 
 def parse_args (args_list, timeout = 0):
@@ -67,23 +71,49 @@ def snap_photo (args_list):
 		return None
 
 
+def launch_cmd (command):
+	code = call (command, shell=True)
+
 def start_streaming (args_list):
 
+	global control_streaming_th 
+	res = {}
 	args = " -o - " + parse_args(args_list, 9999999)
 	command = RBPI_VIDEO_COMMAND + " " + args + " " + VLC_STREAMING_COMMAND
 
-	#code = call (command, shell=True)
-	code = 0
-	res = {}
+	print command 
 
-	if (code == 0):
+	try:
+		if (control_streaming_th == None):
+			control_streaming_th = 1
+			streaming_th  = threading.Thread(target = launch_cmd, args=[command])
+			streaming_th.setDaemon(True)
+			streaming_th.start()
+
 		res["code"] = 200
 		res["streaming_url"] = VLC_STREAMING_URL % (get_ip())
-	else:
+		
+	except:
 		res["code"] = 500
+		res["msg"] = "Error while streaming was initialized!"
 		res["streaming_url"] = ""
-	
+		
+
 	return res
+
+def stop_streaming():
+
+	global control_streaming_th 
+
+	cmds = {'vlc',RBPI_VIDEO_COMMAND}
+
+	for cmd in cmds:
+		print "killing " + cmd
+		kill_command = "ps aux | grep " + cmd + " | grep -v grep | tr -s ' ' | cut -d' ' -f2 | tr -s '\n' ' ' | sed -e s/^/kill\ -9\ /g | bash"
+		call (kill_command, shell=True)
+
+	control_streaming_th = None
+
 
 
 def get_ip ():
